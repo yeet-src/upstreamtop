@@ -1,0 +1,6 @@
+# Build artifact from `make` — regenerated locally.
+*.o
+
+# Python bytecode cache from `simulate.py` imports.
+__pycache__/
+*.pyc
