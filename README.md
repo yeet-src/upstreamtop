@@ -62,9 +62,12 @@ badly undercount. Parsing requests gives true RPS.
 make
 ```
 
-Compiles `upstreamtop.bpf.c` against the bpf headers shipped with
-libbpf-sys (falling back to `/usr/include`). Requires `clang`. No
-`vmlinux.h` needed — it uses the standard `linux/*.h` packet headers.
+Dumps `vmlinux.h` from the running kernel's BTF (`bpftool btf dump`)
+and compiles `upstreamtop.bpf.c` against it plus the bpf headers shipped
+with libbpf-sys (falling back to `/usr/include`). Requires `clang` and
+`bpftool`. CO-RE: the packet-header structs (`ethhdr`, `iphdr`,
+`tcphdr`), `struct __sk_buff`, and the `IPPROTO_*` enum come from the
+kernel's own types — no system `linux/*.h` packet headers needed.
 
 ## Run
 
@@ -112,7 +115,9 @@ is slow (60–160ms) and returns 5xx ~12% of the time.
 
 ## Requirements & scope
 
-- **Kernel ≥ 6.6** for `tcx` attach (the modern TC hook).
+- **Kernel ≥ 6.6** for `tcx` attach (the modern TC hook), built with
+  `CONFIG_DEBUG_INFO_BTF=y` so `make` can dump `vmlinux.h` from
+  `/sys/kernel/btf/vmlinux`. Any kernel new enough for `tcx` ships it.
 - **Plain-HTTP upstream.** If nginx talks to backends over TLS
   (`proxy_pass https://…`), the bytes on the wire are encrypted and
   this won't see them — switch to a `uprobe` on `SSL_write` and recover

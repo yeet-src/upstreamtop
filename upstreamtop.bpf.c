@@ -1,11 +1,26 @@
-#include <linux/bpf.h>
-#include <linux/if_ether.h>
-#include <linux/in.h>
-#include <linux/ip.h>
-#include <linux/tcp.h>
-#include <linux/pkt_cls.h>
+/* vmlinux.h dumped from a recent kernel emits a block of kfunc/ksym
+ * prototypes (e.g. bpf_stream_vprintk) that collide with the ones in an
+ * older bundled bpf_helpers.h. We call no kfuncs, so suppress that block
+ * — bpf_helpers.h supplies every helper we use. */
+#define BPF_NO_KFUNC_PROTOTYPES
+
+/* The bpftool-generated vmlinux.h emits forward declarations the kernel
+ * BTF dump can't fully resolve, which clang flags under -Wall. Harmless
+ * — silence them for this header alone, leaving -Wall live below. */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-declarations"
+#include "vmlinux.h"
+#pragma clang diagnostic pop
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
+
+/* vmlinux.h carries the packet-header structs (ethhdr, iphdr, tcphdr),
+ * struct __sk_buff, and the IPPROTO_* enum — but not the plain macros
+ * from if_ether.h / pkt_cls.h, which never make it into BTF. Define the
+ * handful we use. (IPPROTO_TCP is an enum in vmlinux.h, so leave it be.) */
+#define ETH_P_IP   0x0800  /* Internet Protocol, h_proto value */
+#define ETH_HLEN   14      /* octets in a bare Ethernet header */
+#define TC_ACT_OK  0       /* TC verdict: let the packet proceed */
 
 /* upstreamtop — which backends nginx proxy_passes to, and the RPS of
  * each. nginx's upstream leg is plain HTTP, so we read it straight off
