@@ -1,8 +1,13 @@
 .PHONY: all clean
 
+# A failed/interrupted bpftool dump must not leave a partial vmlinux.h
+# behind — make would treat the half-written file as up to date and the
+# build would fail confusingly downstream. Delete targets on recipe error.
+.DELETE_ON_ERROR:
+
 ARCH    ?= $(shell uname -m | sed 's/x86_64/x86/; s/aarch64/arm64/')
 CLANG   ?= clang
-BPFTOOL ?= bpftool
+BPFTOOL ?= sudo bpftool
 STRIP   ?= strip
 
 # Prefer the bpf headers that ship with libbpf-sys (so this builds without
