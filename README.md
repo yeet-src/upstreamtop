@@ -15,8 +15,9 @@
 
 ```sh
 curl -fsSL https://yeet.cx | sh
-yeet run https://github.com/yeet-src/upstreamtop
+yeet run github:yeet-src/upstreamtop
 ```
+<sub>[Manual install guide](https://yeet.cx/docs/installation) | Linux only</sub>
 
 Drive some traffic through nginx so it proxies to its backends. The dashboard repaints once a second. Useful flags:
 
@@ -153,7 +154,7 @@ python3 simulate.py --workers 40 --duration 120
 In a second terminal:
 
 ```sh
-make && sudo yeet run . -- --ignore 8080
+make && yeet run . -- --ignore 8080
 ```
 
 `--ignore 8080` hides nginx's own listen port. The simulator's load generator runs on the same host, so its client→nginx requests *also* leave on egress and nginx's front door would otherwise appear as a backend. On a real instance with remote clients you don't need it.
